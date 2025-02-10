@@ -1,4 +1,4 @@
-{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2057{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2057{\fonttbl{\f0\fnil\fcharset0 Calibri;}{\f1\fmodern\fprq1\fcharset0 Courier New;}}
 {\colortbl ;\red255\green255\blue0;\red0\green0\blue255;\red255\green0\blue0;\red0\green0\blue0;\red0\green77\blue187;}
 {\*\generator Riched20 10.0.22621}\viewkind4\uc1 
 \pard\sa200\sl276\slmult1\highlight1\f0\fs36\lang9 Jenkins set-up for ubuntu:\highlight0\par
@@ -81,10 +81,131 @@ Use SMTP Authentication : username : your_email@gmail.com  --- Password : vzig m
 \cf3 Configure email to job:\cf4\par
 \tab Any job --- configure --- post-build actions --- email-notification --- receipient : enter email --- check send email for every unstable build --- save \par
 \tab now make few error in certain job and try to build , check email  \par
-\cf0\par
+\cf0 ---------------------------------------------------------------------------\par
+\cf3 Deploying a project in Tomcat Server:\cf4\par
+
+\pard\nowidctlpar\tab\tab\cf0\f1\fs28\lang16393 qa -- ubuntu 22 version --install apache tomcat 9\par
+\par
+install apache:\par
+\par
+---> sudo apt-cache search tomcat\par
+\par
+---> sudo apt-get install -y tomcat9 tomcat9-admin  (or)\par
+\par
+---> sudo apt-get install -y tomcat9\par
+\par
+---> sudo apt-get install -y tomcat9-admin\par
+\par
+---> sudo systemctl start tomcat9\par
+\par
+---> sudo systemctl enable tomcat9\par
+\par
+---> qa_public_ip:8080\par
+\par
+user in tomcat qa and production server:\par
+Linux command : \par
+\par
+---> cd /etc/tomcat9/\par
+\par
+---> ls\par
+\par
+you will find file tomcat-users.xml\par
+open the file \par
+\par
+---> sudo nano tomcat-users.xml\par
+\par
+on top of end tag enter user details\par
 \par
 \par
 \par
+<!-- Administrator role with full access -->\par
+    <role rolename="manager-gui"/>\par
+    <role rolename="manager-script"/>\par
+    <role rolename="manager-status"/>\par
+    <role rolename="admin-gui"/>\par
+\par
+    <!-- Admin user with roles -->\par
+\par
+    <user username="admin" password="password" roles="manager-gui,manager-script,manager-status,admin-gui"/>\par
+\par
+    <user username="sree" password="12345" roles="manager-gui,manager-script,manager-status,admin-gui"/>\par
+\par
+\par
+restart tomcat\par
+\par
+---> sudo service tomcat9 restart\par
+\par
+now the configuration part is over check wether Jenkins is up and running. \par
+---> systemctl status jenkins\par
+\par
+run Jenkins \par
+
+\pard\sa200\sl276\slmult1 ---> ipaddress:8080 \par
+\f0\fs36\lang9 ---------------------------------------------------------------------------\par
+
+\pard\nowidctlpar\highlight1\f1\fs28\lang16393 CD:Continuous Delivery\highlight0\par
+\par
+You need to deploy the artifact to qa server\par
+\par
+for this we need to install a plugin called " deploy to container " plugin\par
+\par
+--- dashboard --- manage Jenkins --- plugins --- available plugins --- deploy to container --- install --- goback --- job --- configure --- postbuild activity --- deploy war to a container --- deploy war or ear to a container : ( sometimes multiple war files will be created so to deploy all war files) **/*.war --- context path : qaenv ( take note of this context path ) --- Add Container : Tomcat 9x remote --- tomcat credentials:\par
+add --- Jenkins ---username: --- password : --- tomcat url :{{\field{\*\fldinst{HYPERLINK http://private-ip_qa:8080 }}{\fldrslt{http://private-ip_qa:8080\ul0\cf0}}}}\f1\fs28   (qa servers)--- apply --- save\par
+
+\pard\sa200\sl276\slmult1\f0\fs36\lang9\par
+--- \f1\fs28\lang16393 public_ip_Qa_server:8080/qaenv \f0\fs36\lang9\par
+\par
+\cf3 Pipeline project:\par
+\tab\cf0 Dashboard --- manage jenkins --- plugins --- \highlight1 pipeline stage view\highlight0  --- install --- go back to top page\cf4\par
+\tab Dashboard --- new item --- name: enter --- pipeline --- ok --- pipeline : \par
+\par
+choose hello world and understand stages---build---view\par
+configure --- pipeline syntax --- Sample step: git:git --- URL:paste --- generate pipeline script --- copy and paste inside the step block\par
+\cf0\b\fs28 pipeline \{\par
+    agent any\par
+    stages \{\par
+        stage('Clone') \{\par
+            steps \{\par
+                echo 'Clone Stage'\par
+                git '{{\field{\*\fldinst{HYPERLINK https://github.com/Become-DevOps/DevOpsClassCodes.git }}{\fldrslt{https://github.com/Become-DevOps/DevOpsClassCodes.git\ul0\cf0}}}}\f0\fs28 '\par
+            \}\par
+        \}\par
+        stage('Compile') \{\par
+            steps \{\par
+                echo 'Compile job '\par
+                sh 'mvn compile'\par
+            \}\par
+        \}\par
+        stage('Code-review') \{\par
+            steps \{\par
+                echo 'Code-review job '\par
+                sh 'mvn pmd:pmd'\par
+            \}\par
+            post\{\par
+                success\{\par
+                    recordIssues sourceCodeRetention: 'LAST_BUILD', tools: [pmdParser(pattern: '**/pmd.xml')]\par
+                \}\par
+            \}\par
+        \}\par
+        stage('Test job') \{\par
+            steps \{\par
+                echo 'Test job '\par
+                sh 'mvn test'\par
+            \}\par
+            post\{\par
+                success\{\par
+                    junit stdioRetention: '', testResults: 'target/surefire-reports/*.xml'\par
+                \}\par
+            \}\par
+        \}\par
+        stage('Package job') \{\par
+            steps \{\par
+                echo 'Test job '\par
+                sh 'mvn package'\par
+            \}\par
+        \}\par
+\b0\par
+\fs36\par
 \fs22\par
 }
  
