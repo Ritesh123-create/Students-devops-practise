@@ -119,7 +119,7 @@ Flags :\highlight0\b0\par
 \tab ---> docker-compose down\par
 \highlight4\b Docker-swarm:\highlight0\b0\par
 \tab ---> sudo hostname new-name\par
-\tab ---> docker init swarm\par
+\tab ---> docker swarm init\par
 \tab ---> docker swarm join-token manager\par
 \tab ---> docker swarm join-token worker\par
 \tab ---> docker info | grep -i swarm\par
@@ -146,6 +146,36 @@ Flags :\highlight0\b0\par
 \highlight4\b Remove Service:\highlight0\b0\par
 \tab ---> docker service rm myweb\par
 \tab ---> docker service ls\par
+Drain the manager:\par
+\tab ---> docker node ls\par
+\tab ---> \fs28 docker node update --availability=Drain docker-manager-1\fs32\par
+\tab ---> \fs28 docker node update --availability=Drain docker-manager-2\par
+\tab ---> docker node ls\par
+\highlight4\b Remove node from cluster:\par
+\highlight0\tab ---> \b0 docker node ls\par
+  Switch to node which u want to leave \par
+\tab ---> docker info | grep swarm \par
+\tab ---> \fs32 docker swarm leave\par
+\tab ---> docker info | grep swarm\par
+ Switch to manager:\par
+\tab ---> docker node ls\par
+\tab ---> docker node rm hostname/id\par
+\tab ---> docker node ls\tab\par
+\highlight4 Promoting worker to manager :\par
+\highlight0   Switch to manager:\par
+\tab ---> docker node promote worker1\par
+\tab ---> docker node ls \par
+ Switch to worker1:\par
+\fs28\tab ---> docker node ls\par
+\highlight4\fs32 Demote manager to worker :\par
+\highlight0\fs28  Switch to manager1:\par
+\tab ---> \fs32 docker node demote manager2\par
+\tab ---> docker node ls\par
+Switch to manager2:\par
+\tab docker node ls\par
+\fs28\par
+\tab\par
+\fs32\par
 \par
 
 \pard\sa160\sl259\slmult0\tab\tab\tab\par
@@ -154,4 +184,3 @@ Flags :\highlight0\b0\par
 \pard\sa200\sl276\slmult1\fs22\par
 \par
 }
- 
